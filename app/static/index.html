@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SteelAgent-RAG 控制台</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">SA</div>
+          <div>
+            <h1>SteelAgent-RAG</h1>
+            <p>钢铁知识库智能体控制台</p>
+          </div>
+        </div>
+
+        <section class="panel compact">
+          <div class="panel-title">运行状态</div>
+          <div class="status-row">
+            <span id="healthDot" class="status-dot"></span>
+            <span id="healthText">连接中</span>
+          </div>
+          <button id="ingestBtn" class="secondary-action" type="button">重建知识库索引</button>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">会话设置</div>
+          <label>
+            角色
+            <select id="roleSelect">
+              <option value="visitor">visitor</option>
+              <option value="operator">operator</option>
+              <option value="engineer" selected>engineer</option>
+              <option value="manager">manager</option>
+              <option value="admin">admin</option>
+            </select>
+          </label>
+          <label>
+            用户 ID
+            <input id="userId" value="u001" />
+          </label>
+          <label>
+            会话 ID
+            <input id="sessionId" value="s001" />
+          </label>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">示例问题</div>
+          <div class="quick-list">
+            <button type="button" data-question="高炉炼铁的主要流程是什么？">高炉炼铁流程</button>
+            <button type="button" data-question="连铸机结晶器液位波动可能是什么原因？">连铸故障分析</button>
+            <button type="button" data-question="煤气区域作业有哪些安全要求？">安全生产要求</button>
+            <button type="button" data-question="厚度10mm、宽度2m、长度6m的钢板重量是多少？">钢板重量计算</button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <h2>知识问答</h2>
+            <p>结合权限控制、RAG 检索、工具调用与安全审计</p>
+          </div>
+          <a class="docs-link" href="/docs" target="_blank" rel="noreferrer">API 文档</a>
+        </header>
+
+        <section id="chatLog" class="chat-log" aria-live="polite"></section>
+
+        <form id="chatForm" class="composer">
+          <textarea id="queryInput" rows="3" placeholder="输入钢铁工艺、设备故障、安全制度或生产指标问题"></textarea>
+          <div class="composer-actions">
+            <button id="clearBtn" class="secondary-action" type="button">清空</button>
+            <button id="sendBtn" class="primary-action" type="submit">发送</button>
+          </div>
+        </form>
+      </main>
+
+      <aside class="inspector">
+        <section class="panel">
+          <div class="panel-title">执行轨迹</div>
+          <ol id="planList" class="plan-list"></ol>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">知识来源</div>
+          <div id="citationList" class="citation-list empty">暂无引用</div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">反思检查</div>
+          <div id="reflectionBox" class="reflection-box empty">暂无检查结果</div>
+        </section>
+
+        <section class="panel tools-panel">
+          <div class="panel-title">专业工具</div>
+          <div class="tool-tabs" role="tablist">
+            <button class="active" type="button" data-tool="weight">重量</button>
+            <button type="button" data-tool="carbon">碳排</button>
+            <button type="button" data-tool="energy">能耗</button>
+            <button type="button" data-tool="fault">故障</button>
+            <button type="button" data-tool="production">指标</button>
+          </div>
+
+          <form id="weightTool" class="tool-form active">
+            <label>
+              类型
+              <select name="shape">
+                <option value="plate">钢板</option>
+                <option value="round_bar">圆钢</option>
+                <option value="pipe">钢管</option>
+                <option value="rebar">螺纹钢</option>
+              </select>
+            </label>
+            <div class="field-grid">
+              <label>厚度 mm<input name="thickness_mm" type="number" value="10" step="0.01" /></label>
+              <label>宽度 m<input name="width_m" type="number" value="2" step="0.01" /></label>
+              <label>长度 m<input name="length_m" type="number" value="6" step="0.01" /></label>
+              <label>直径 mm<input name="diameter_mm" type="number" value="20" step="0.01" /></label>
+              <label>外径 mm<input name="outer_diameter_mm" type="number" value="60" step="0.01" /></label>
+              <label>内径 mm<input name="inner_diameter_mm" type="number" value="40" step="0.01" /></label>
+            </div>
+            <button class="primary-action full" type="submit">计算重量</button>
+          </form>
+
+          <form id="carbonTool" class="tool-form">
+            <label>产量 t<input name="production_ton" type="number" value="1000" step="0.01" /></label>
+            <label>排放因子<input name="emission_factor" type="number" value="1.8" step="0.01" /></label>
+            <button class="primary-action full" type="submit">计算碳排</button>
+          </form>
+
+          <form id="energyTool" class="tool-form">
+            <div class="field-grid">
+              <label>用电 kWh<input name="electricity_kwh" type="number" value="30000" step="0.01" /></label>
+              <label>电价<input name="electricity_price" type="number" value="0.65" step="0.01" /></label>
+              <label>燃气 m3<input name="gas_m3" type="number" value="0" step="0.01" /></label>
+              <label>气价<input name="gas_price" type="number" value="3.5" step="0.01" /></label>
+            </div>
+            <button class="primary-action full" type="submit">计算成本</button>
+          </form>
+
+          <form id="faultTool" class="tool-form">
+            <label>
+              设备
+              <select name="equipment">
+                <option value="高炉">高炉</option>
+                <option value="转炉">转炉</option>
+                <option value="连铸机" selected>连铸机</option>
+                <option value="轧机">轧机</option>
+              </select>
+            </label>
+            <label>故障现象<input name="symptom" value="结晶器液位波动" /></label>
+            <button class="primary-action full" type="submit">诊断故障</button>
+          </form>
+
+          <form id="productionTool" class="tool-form">
+            <label>CSV 路径<input name="csv_path" value="data/production/production_sample.csv" /></label>
+            <button class="primary-action full" type="submit">统计指标</button>
+          </form>
+
+          <div id="toolResult" class="tool-result empty">等待计算</div>
+        </section>
+      </aside>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

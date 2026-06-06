@@ -1,0 +1,11 @@
+[
+  {
+    "doc_id": "RP_001",
+    "title": "企业岗位权限说明",
+    "category": "policy",
+    "department": "admin",
+    "security_level": "public",
+    "allowed_roles": ["visitor", "operator", "engineer", "manager", "admin"],
+    "content": "企业岗位权限管理是信息安全的重要组成部分。访客（visitor）权限：只能查看公开行业知识，不能使用生产数据分析工具，不能查看内部操作规程。一线操作员（operator）权限：可以查看公开知识、操作规程、安全制度、设备维护建议，可以使用钢材重量计算工具和故障辅助分析工具。工程师（engineer）权限：可以查看工艺知识、设备故障、能耗、碳排放说明，可以使用大部分分析工具，可以查看技术类文档。管理人员（manager）权限：可以查看生产指标、成本、能耗、碳排放汇总信息，可以使用生产统计工具、能耗成本和碳排放工具。管理员（admin）权限：可以查看全部文档，可以使用全部工具。文档安全等级包括：public（公开）、internal（内部）、confidential（机密）。访问规则：visitor只能访问public；operator可以访问public和internal；engineer可以访问public、internal以及工艺和设备类confidential文档；manager可以访问public、internal以及统计、成本、能耗类confidential文档；admin可以访问全部内容。权限变更需要经过部门负责人审批，并在系统中更新。"
+  }
+]
